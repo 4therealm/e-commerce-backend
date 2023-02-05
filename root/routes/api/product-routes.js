@@ -4,27 +4,62 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 // The `/api/products` endpoint
 
 // get all products
-router.get('/', (req, res) => {
-  // find all products
-  // be sure to include its associated Category and Tag data
+router.get('/', async (req, res) => {
+  try {
+    const products = await Product.findAll({
+      include: [
+        {
+          model: Category,
+          as: 'category',
+          required: true
+        },
+        {
+          model: Tag,
+          through: {
+            model: ProductTag
+          },
+          required: false
+        }
+      ]
+    });
+
+    // handle the retrieved products data
+    res.json(products);
+  } catch (err) {
+    // handle the error
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // get one product
 router.get('/:id', (req, res) => {
-  // find a single product by its `id`
-  // be sure to include its associated Category and Tag data
+  Product.findByPk(req.params.id, {
+    include: [
+      {
+        model: Category,
+      },
+      {
+        model: Tag,
+        through: {
+          model: ProductTag,
+        },
+      },
+    ],
+  })
+    .then((product) => {
+      if (!product) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+      return res.json(product);
+    })
+    .catch((error) => {
+      console.error(error);
+      return res.status(500).json({ message: 'Error retrieving product' });
+    });
 });
 
 // create new product
 router.post('/', (req, res) => {
-  /* req.body should look like this...
-    {
-      product_name: "Basketball",
-      price: 200.00,
-      stock: 3,
-      tagIds: [1, 2, 3, 4]
-    }
-  */
   Product.create(req.body)
     .then((product) => {
       // if there's product tags, we need to create pairings to bulk create in the ProductTag model
