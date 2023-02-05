@@ -68,9 +68,11 @@ router.put("/:id", (req, res) => {
   )
     .then((numUpdated) => {
       if (numUpdated) {
-        res.status(200).send(`Successfully updated tag name to "${name}"`);
+        res
+          .status(200)
+          .json({ message: `Tag id: ${req.params.id} updated to '${name}'` });
       } else {
-        res.status(404).send("Tag not found");
+        res.status(404).send({ message: "Tag not found" });
       }
     })
     .catch((error) => {
@@ -78,18 +80,25 @@ router.put("/:id", (req, res) => {
     });
 });
 
-router.delete("/:id", (req, res) => {
-  Tag.destroy({
-    where: {
-      id: req.params.id,
-    },
-  })
-    .then(() => {
-      res.status(204).send();
-    })
-    .catch((error) => {
-      res.status(500).json({ error });
-    });
+router.delete("/:id", async (req, res) => {
+  try {
+    // Find the targeted product using its ID
+    const tag = await Tag.findByPk(req.params.id);
+
+    // If the tag doesn't exist, return a 404 error
+    if (!tag) {
+      return res.status(404).json({ message: "Tag not found" });
+    }
+
+    // Otherwise, destroy the tag
+    await tag.destroy();
+
+    // Return a success response
+    res.json({ message: `Tag id: ${req.params.id} successfully destroyed` });
+  } catch (error) {
+    // Return an error response
+    res.status(500).json({ message: error.message });
+  }
 });
 
 module.exports = router;

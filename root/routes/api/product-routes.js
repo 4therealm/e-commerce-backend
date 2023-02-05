@@ -1,31 +1,33 @@
-const router = require('express').Router();
-const { Product, Category, Tag, ProductTag } = require('../../models');
+const router = require("express").Router();
+const { Product, Category, Tag, ProductTag } = require("../../models");
 
 // The `/api/products` endpoint
 
 // get all products
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const products = await Product.findAll({
-      exclude: ["category_id"]
-      ,
+      exclude: [
+      {model: Product,
+        attributes: ["category_id"]
+        }],
       include: [
         {
           model: Category,
           attributes: ["category_name"],
-          as: 'category',
-          required: true
+          as: "category",
+          required: true,
         },
         {
           model: Tag,
           attributes: ["tag_name"],
           through: {
             model: ProductTag,
-            attributes: ["tag_id"]
+            attributes: ["tag_id"],
           },
-          required: false
-        }
-      ]
+          required: false,
+        },
+      ],
     });
 
     // handle the retrieved products data
@@ -37,43 +39,40 @@ router.get('/', async (req, res) => {
 });
 
 // get one product
-router.get('/:id', (req, res) => {
+router.get("/:id", (req, res) => {
   Product.findByPk(req.params.id, {
-    exclude: [{
-      attributes:['category_id']
-    }],
     include: [
       {
         model: Category,
         attributes: ["category_name"],
-        as: 'category',
-        required: true
+        as: "category",
+        required: true,
       },
       {
         model: Tag,
         attributes: ["tag_name"],
         through: {
           model: ProductTag,
-          attributes: ["tag_id"]
+          attributes: ["tag_id"],
         },
-        required: false
-      }
+        required: false,
+      },
     ],
   })
     .then((product) => {
       if (!product) {
-        return res.status(404).json({ message: 'Product not found' });
+        return res.status(404).json({ message: "Product not found" });
       }
       return res.json(product);
     })
     .catch((error) => {
       console.error(error);
-      return res.status(500).json({ message: 'Error retrieving product' });
+      return res.status(500).json({ message: "Error retrieving product" });
     });
 });
 
 // create new product
-router.post('/', (req, res) => {
+router.post("/", (req, res) => {
   Product.create(req.body)
     .then((product) => {
       // if there's product tags, we need to create pairings to bulk create in the ProductTag model
@@ -90,7 +89,7 @@ router.post('/', (req, res) => {
       res.status(200).json(product);
     })
     .then((productTagIds) => {
-      res.status(200).json(productTagIds)
+      res.status(200).json(productTagIds);
     })
     .catch((err) => {
       console.log(err);
@@ -99,8 +98,7 @@ router.post('/', (req, res) => {
 });
 
 // update product
-router.put('/:id', (req, res) => {
-
+router.put("/:id", (req, res) => {
   Product.update(req.body, {
     where: {
       id: req.params.id,
@@ -141,21 +139,21 @@ router.put('/:id', (req, res) => {
 });
 
 // Delete endpoint
-router.delete('/:id', async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     // Find the targeted product using its ID
     const product = await Product.findByPk(req.params.id);
 
     // If the product doesn't exist, return a 404 error
     if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
+      return res.status(404).json({ message: "Product not found" });
     }
 
     // Otherwise, destroy the product
     await product.destroy();
 
     // Return a success response
-    res.json({ message: 'Product deleted successfully' });
+    res.json({ message: "Product deleted successfully" });
   } catch (error) {
     // Return an error response
     res.status(500).json({ message: error.message });
