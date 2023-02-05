@@ -4,16 +4,21 @@ const { Category, Product } = require("../../models");
 // The `/api/categories` endpoint
 
 router.get("/", async (req, res) => {
-  const catData = await Category.findAll().catch((err) => {
+  const catData = await Category.findAll({
+    include:
+    {
+      model: Product
+    },
+  }).catch((err) => {
     res.json(err);
   });
   res.json(catData);
 });
 
 router.get("/:id", async (req, res) => {
-  const catData = await Category.findOne({
-    where: {
-      id: req.params.id,
+  const catData = await Category.findByPk(req.params.id,{
+    include: {
+      model: Product
     },
   })
     .then((data) => res.json(data))
