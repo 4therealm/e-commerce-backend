@@ -7,6 +7,8 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 router.get('/', async (req, res) => {
   try {
     const products = await Product.findAll({
+      exclude: ["category_id"]
+      ,
       include: [
         {
           model: Category,
@@ -37,6 +39,9 @@ router.get('/', async (req, res) => {
 // get one product
 router.get('/:id', (req, res) => {
   Product.findByPk(req.params.id, {
+    exclude: [{
+      attributes:['category_id']
+    }],
     include: [
       {
         model: Category,
@@ -72,7 +77,7 @@ router.post('/', (req, res) => {
   Product.create(req.body)
     .then((product) => {
       // if there's product tags, we need to create pairings to bulk create in the ProductTag model
-      if (req.body.tagIds.length) {
+      if (req.body.tagIds && req.body.tagIds.length) {
         const productTagIdArr = req.body.tagIds.map((tag_id) => {
           return {
             product_id: product.id,
@@ -84,7 +89,9 @@ router.post('/', (req, res) => {
       // if no product tags, just respond
       res.status(200).json(product);
     })
-    .then((productTagIds) => res.status(200).json(productTagIds))
+    .then((productTagIds) => {
+      res.status(200).json(productTagIds)
+    })
     .catch((err) => {
       console.log(err);
       res.status(400).json(err);
@@ -93,7 +100,7 @@ router.post('/', (req, res) => {
 
 // update product
 router.put('/:id', (req, res) => {
-  // update product data
+
   Product.update(req.body, {
     where: {
       id: req.params.id,
@@ -133,17 +140,25 @@ router.put('/:id', (req, res) => {
     });
 });
 
+// Delete endpoint
 router.delete('/:id', async (req, res) => {
-  // delete one product by its `id` value
   try {
-    const removed = await Product.destroy({
-      where: {
-        id: req.body.id,
-      },
-    });
-    res.status(200).json(req)
+    // Find the targeted product using its ID
+    const product = await Product.findByPk(req.params.id);
+
+    // If the product doesn't exist, return a 404 error
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Otherwise, destroy the product
+    await product.destroy();
+
+    // Return a success response
+    res.json({ message: 'Product deleted successfully' });
   } catch (error) {
-    res.status(400).json(error);
+    // Return an error response
+    res.status(500).json({ message: error.message });
   }
 });
 

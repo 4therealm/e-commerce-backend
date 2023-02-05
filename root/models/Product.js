@@ -29,14 +29,14 @@ Product.init(
       isNumeric: true,
       defaultValue: 10
     },
-    // category_id: {
-    //   type: DataTypes.INTEGER,
-    //   allowNull: true,
-    //   references:{
-    //     model: 'Category',
-    //     key: 'id'
-    //   }
-    // }
+    category_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references:{
+        model: 'Category',
+        key: 'id'
+      }
+    }
    
   },
   {
