@@ -1,12 +1,13 @@
 # 13 Object-Relational Mapping (ORM): E-Commerce Back End
 Your task is to build the back end for an e-commerce site by modifying starter code. You’ll configure a working Express.js API to use Sequelize to interact with a MySQL database.
 
-https://drawsql.app/teams/max-28/diagrams/e-commerce
+
 
 
 ## Details
 * Demo: https://watch.screencastify.com/v/M05jhF47m1MvsfTmqdrj
 * Repo: https://github.com/4therealm/e-commerce-backend
+* Tables:https://drawsql.app/teams/max-28/diagrams/e-commerce
 
 
 ## User Story
